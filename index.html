@@ -1,1 +1,490 @@
-gm_celebrations_tracker.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Team Celebrations</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f0f;--surface:#181818;--surface2:#222;--border:#2e2e2e;
+  --text:#f0ece4;--muted:#888;
+  --radius:10px;--font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh}
+.app{max-width:980px;margin:0 auto;padding:28px 20px 80px}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:16px;flex-wrap:wrap}
+.header h1{font-size:20px;font-weight:600;letter-spacing:-.3px}
+.header p{font-size:12px;color:var(--muted);margin-top:3px}
+.header-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:500;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn-primary{background:var(--text);color:var(--bg)}
+.btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-danger{background:#3a1a1a;color:#f87171;border:1px solid #5a2a2a}
+.btn-purple{background:#1a0a2e;color:#c084fc;border:1px solid #3b2a6e}
+
+/* STORE BAR */
+.store-bar{display:flex;align-items:center;gap:10px;margin-bottom:22px;flex-wrap:wrap}
+.store-bar-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:500;white-space:nowrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:var(--font);transition:all .15s}
+.chip:hover{border-color:#555;color:var(--text)}
+.chip.active-all{background:#333;color:var(--text);border-color:#555}
+.chip.active-store{background:var(--text);color:var(--bg);border-color:var(--text)}
+
+/* TABS */
+.tabs{display:flex;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:22px;width:fit-content}
+.tab{padding:6px 17px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);border:none;background:transparent;font-family:var(--font);transition:all .15s}
+.tab.active{background:var(--surface2);color:var(--text)}
+
+/* LEGEND */
+.legend{display:flex;gap:14px;margin-bottom:18px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%}
+
+/* CALENDAR */
+.cal-hdr{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.cal-hdr h2{font-size:16px;font-weight:600;flex:1}
+.cal-nav{background:var(--surface2);border:1px solid var(--border);color:var(--text);width:29px;height:29px;border-radius:7px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cal-nav:hover{background:var(--border)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal-dow{text-align:center;font-size:11px;font-weight:500;color:var(--muted);font-family:var(--mono);padding-bottom:6px;letter-spacing:.4px}
+.cal-day{background:var(--surface);border:1px solid var(--border);border-radius:8px;min-height:72px;padding:6px;transition:border-color .15s}
+.cal-day.other{opacity:.25}
+.cal-day.today{border-color:#555}
+.cal-day.clickable{cursor:pointer}
+.cal-day.clickable:hover{border-color:#666;background:#1d1d1d}
+.cal-dn{font-size:11px;font-weight:500;color:var(--muted);font-family:var(--mono)}
+.cal-day.today .cal-dn{color:var(--text)}
+.cal-evs{margin-top:4px;display:flex;flex-direction:column;gap:2px}
+.pill{font-size:10px;padding:2px 5px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.pill.birthday{background:#431407;color:#fb923c}
+.pill.anniversary{background:#1e3a5f;color:#93c5fd}
+
+/* CARDS */
+.sec-lbl{font-size:11px;font-weight:500;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:9px}
+.card-list{display:flex;flex-direction:column;gap:7px;margin-bottom:22px}
+.ev-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;display:flex;align-items:center;gap:12px}
+.ev-ico{width:33px;height:33px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.ev-ico.birthday{background:#431407}
+.ev-ico.anniversary{background:#1e3a5f}
+.ev-info{flex:1}
+.ev-info strong{font-size:13px}
+.ev-info p{font-size:12px;color:var(--muted);margin-top:1px}
+.ev-r{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.ev-days{font-size:12px;font-family:var(--mono);color:var(--muted)}
+.ev-days b{color:var(--text);font-weight:600}
+.ai-btn{background:linear-gradient(135deg,#1a0a2e,#0d1a3a);border:1px solid #3b2a6e;color:#c084fc;font-size:11px;padding:4px 9px;border-radius:6px;cursor:pointer;font-family:var(--font);font-weight:500}
+.ai-btn:hover{opacity:.85}
+
+/* ROSTER TABLE */
+.rtoolbar{display:flex;gap:9px;margin-bottom:13px;align-items:center;flex-wrap:wrap}
+.search{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:8px;font-size:13px;font-family:var(--font);flex:1;min-width:140px}
+.search::placeholder{color:var(--muted)}
+.search:focus{outline:none;border-color:#444}
+.rtable{width:100%;border-collapse:collapse}
+.rtable th{font-size:11px;font-weight:500;color:var(--muted);text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);letter-spacing:.3px;text-transform:uppercase}
+.rtable td{padding:10px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle}
+.rtable tr:last-child td{border-bottom:none}
+.rtable tbody tr:hover td{background:var(--surface)}
+.tag{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:500}
+.tag.birthday{background:#431407;color:#fb923c}
+.tag.anniversary{background:#1e3a5f;color:#93c5fd}
+.stag{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:2px 6px;font-size:11px;color:var(--muted);font-family:var(--mono)}
+
+/* AI PANEL */
+.ai-panel{background:var(--surface);border:1px solid #3b2a6e;border-radius:11px;padding:15px;margin-top:13px}
+.ai-phdr{font-size:12px;font-weight:600;color:#c084fc;margin-bottom:8px}
+.ai-out{font-size:13px;line-height:1.65;color:var(--text);white-space:pre-wrap}
+.ai-copy{font-size:11px;padding:4px 10px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);cursor:pointer;margin-top:9px;font-family:var(--font)}
+.ai-copy:hover{color:var(--text)}
+
+/* OVERLAYS */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:450px;padding:24px;max-height:90vh;overflow-y:auto}
+.modal h3{font-size:16px;font-weight:600;margin-bottom:16px}
+.fg{margin-bottom:13px}
+.fg label{display:block;font-size:11px;font-weight:500;color:var(--muted);margin-bottom:5px;letter-spacing:.3px;text-transform:uppercase}
+.fg input,.fg select{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:8px;font-size:13px;font-family:var(--font)}
+.fg input:focus,.fg select:focus{outline:none;border-color:#555}
+.fg select option{background:var(--bg)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mfooter{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}
+.empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px}
+.empty small{display:block;margin-top:5px;font-size:12px}
+
+/* STORE MGMT */
+.smgmt-item{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 13px;margin-bottom:7px}
+.smgmt-item span{flex:1;font-size:13px}
+.smgmt-cnt{font-size:12px;color:var(--muted);font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div>
+      <h1>Team Celebrations</h1>
+      <p id="header-sub">Birthdays &amp; work anniversaries</p>
+    </div>
+    <div class="header-right">
+      <button class="btn btn-ghost btn-sm" onclick="openStoresMgmt()">&#9881; Stores</button>
+      <button class="btn btn-primary" onclick="openAdd()">+ Add Employee</button>
+    </div>
+  </div>
+
+  <div class="store-bar">
+    <span class="store-bar-lbl">Store</span>
+    <div class="chips" id="store-chips"></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('calendar',this)">Calendar</button>
+    <button class="tab" onclick="switchTab('upcoming',this)">Upcoming</button>
+    <button class="tab" onclick="switchTab('roster',this)">Employees</button>
+  </div>
+
+  <div id="tab-calendar">
+    <div class="legend">
+      <div class="legend-item"><div class="dot" style="background:#f97316"></div>Birthday</div>
+      <div class="legend-item"><div class="dot" style="background:#3b82f6"></div>Work Anniversary</div>
+    </div>
+    <div class="cal-hdr">
+      <button class="cal-nav" onclick="prevMonth()">&#8249;</button>
+      <h2 id="cal-title"></h2>
+      <button class="cal-nav" onclick="nextMonth()">&#8250;</button>
+      <button class="btn btn-ghost btn-sm" onclick="goToday()">Today</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+
+  <div id="tab-upcoming" style="display:none">
+    <div id="upcoming-content"></div>
+    <div id="ai-up-panel" style="display:none" class="ai-panel">
+      <div class="ai-phdr">&#10022; AI Message</div>
+      <div class="ai-out" id="ai-up-out"></div>
+      <button class="ai-copy" onclick="copyEl('ai-up-out')">Copy</button>
+    </div>
+  </div>
+
+  <div id="tab-roster" style="display:none">
+    <div class="rtoolbar">
+      <input class="search" id="roster-search" placeholder="Search name..." oninput="renderRoster()" />
+      <button class="btn btn-purple btn-sm" onclick="genBulkMsg()">&#10022; AI Team Message</button>
+    </div>
+    <table class="rtable">
+      <thead><tr><th>Name</th><th>Store</th><th>Type</th><th>Date</th><th>Next</th><th></th></tr></thead>
+      <tbody id="roster-body"></tbody>
+    </table>
+    <div id="ai-roster-panel" style="display:none" class="ai-panel">
+      <div class="ai-phdr">&#10022; AI Team Message</div>
+      <div class="ai-out" id="ai-roster-out"></div>
+      <button class="ai-copy" onclick="copyEl('ai-roster-out')">Copy</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD EMPLOYEE -->
+<div class="overlay" id="add-overlay" onclick="if(event.target===this)closeModal('add-overlay')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3>Add Employee</h3>
+    <div class="fg"><label>Full Name</label><input id="f-name" placeholder="e.g. Maria Chen" /></div>
+    <div class="frow">
+      <div class="fg"><label>Store</label><select id="f-store"><option value="">— Select —</option></select></div>
+      <div class="fg"><label>Role</label><input id="f-role" placeholder="e.g. Shift Lead" /></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Birthday (MM/DD)</label><input id="f-birthday" placeholder="MM/DD" maxlength="5" /></div>
+      <div class="fg"><label>Hire Date</label><input id="f-hire" type="date" /></div>
+    </div>
+    <div class="mfooter">
+      <button class="btn btn-ghost" onclick="closeModal('add-overlay')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEmployee()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- STORES MGMT -->
+<div class="overlay" id="stores-overlay" onclick="if(event.target===this)closeModal('stores-overlay')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3>Manage Stores</h3>
+    <div id="smgmt-list"></div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <input id="new-store-inp" class="search" placeholder="New store name..." style="flex:1" onkeydown="if(event.key==='Enter')addStore()" />
+      <button class="btn btn-primary btn-sm" onclick="addStore()">Add</button>
+    </div>
+    <div class="mfooter"><button class="btn btn-ghost" onclick="closeModal('stores-overlay')">Done</button></div>
+  </div>
+</div>
+
+<!-- DAY DETAIL -->
+<div class="overlay" id="day-overlay" onclick="if(event.target===this)closeModal('day-overlay')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3 id="day-title"></h3>
+    <div id="day-evs" style="display:flex;flex-direction:column;gap:7px;margin-bottom:15px"></div>
+    <button class="ai-btn" onclick="genDayMsg()">&#10022; Generate celebration message</button>
+    <div id="day-ai-panel" style="display:none" class="ai-panel">
+      <div class="ai-phdr">&#10022; AI Message</div>
+      <div class="ai-out" id="day-ai-out"></div>
+      <button class="ai-copy" onclick="copyEl('day-ai-out')">Copy</button>
+    </div>
+    <div class="mfooter"><button class="btn btn-ghost" onclick="closeModal('day-overlay')">Close</button></div>
+  </div>
+</div>
+
+<script>
+let employees = JSON.parse(localStorage.getItem('dz_emp') || '[]');
+let stores    = JSON.parse(localStorage.getItem('dz_stores') || '[]');
+let activeStore = 'all';
+let selDayEvs = [];
+let curYear = new Date().getFullYear();
+let curMonth = new Date().getMonth();
+
+// Seed
+if (!stores.length) { stores = ['Bellevue','U Village','SLU']; saveStores(); }
+if (!employees.length) {
+  employees = [
+    {id:1,name:'Maria Chen',  store:'Bellevue', role:'Shift Lead',birthday:'06/22',hire:'2022-06-15'},
+    {id:2,name:'James Park',  store:'U Village',role:'Crew',      birthday:'06/19',hire:'2023-01-10'},
+    {id:3,name:'Sofia Torres',store:'Bellevue', role:'Asst. GM',  birthday:'07/04',hire:'2021-07-01'},
+    {id:4,name:'Kevin Liu',   store:'SLU',      role:'Crew',      birthday:'06/30',hire:'2024-06-19'},
+    {id:5,name:'Aisha Nguyen',store:'U Village',role:'Shift Lead',birthday:'07/15',hire:'2022-07-20'},
+  ];
+  saveEmp();
+}
+
+function saveEmp()    { localStorage.setItem('dz_emp',    JSON.stringify(employees)); }
+function saveStores() { localStorage.setItem('dz_stores', JSON.stringify(stores));   }
+function filtered()   { return activeStore==='all' ? employees : employees.filter(e=>e.store===activeStore); }
+
+// STORE CHIPS
+function renderChips() {
+  document.getElementById('store-chips').innerHTML =
+    `<button class="chip${activeStore==='all'?' active-all':''}" onclick="setStore('all')">All Stores</button>` +
+    stores.map(s=>`<button class="chip${activeStore===s?' active-store':''}" onclick="setStore('${s.replace(/'/g,"\\'")}')">` +s+`</button>`).join('');
+  document.getElementById('header-sub').textContent =
+    activeStore==='all' ? 'All stores — birthdays & anniversaries' : activeStore+' — birthdays & anniversaries';
+}
+function setStore(name) {
+  activeStore = name;
+  renderChips();
+  renderCalendar(); renderUpcoming(); renderRoster();
+}
+
+// TABS
+function switchTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active');
+  ['calendar','upcoming','roster'].forEach(t=>{ document.getElementById('tab-'+t).style.display=t===name?'':'none'; });
+  if(name==='calendar')renderCalendar();
+  if(name==='upcoming')renderUpcoming();
+  if(name==='roster')  renderRoster();
+}
+
+// DATE HELPERS
+function nextOcc(mmdd){
+  const[m,d]=mmdd.split('/').map(Number);
+  const now=new Date();now.setHours(0,0,0,0);
+  let n=new Date(now.getFullYear(),m-1,d);
+  if(n<now)n.setFullYear(now.getFullYear()+1);
+  return n;
+}
+function nextAnn(h){
+  if(!h)return null;
+  const hd=new Date(h);const now=new Date();now.setHours(0,0,0,0);
+  let n=new Date(now.getFullYear(),hd.getMonth(),hd.getDate());
+  if(n<now)n.setFullYear(now.getFullYear()+1);
+  return n;
+}
+function daysUntil(d){const now=new Date();now.setHours(0,0,0,0);return Math.round((d-now)/86400000);}
+function fmtDate(d){return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});}
+
+// CALENDAR
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DOWS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function getMonthEvs(y,m){
+  const map={};
+  filtered().forEach(e=>{
+    if(e.birthday){const[mo,d]=e.birthday.split('/').map(Number);if(mo-1===m){if(!map[d])map[d]=[];map[d].push({name:e.name,store:e.store,type:'birthday',sub:'Birthday'});}}
+    if(e.hire){const h=new Date(e.hire);if(h.getMonth()===m){const d=h.getDate(),yrs=y-h.getFullYear();if(!map[d])map[d]=[];map[d].push({name:e.name,store:e.store,type:'anniversary',sub:`${yrs}yr Anniversary`});}}
+  });
+  return map;
+}
+function renderCalendar(){
+  document.getElementById('cal-title').textContent=MONTHS[curMonth]+' '+curYear;
+  const g=document.getElementById('cal-grid');
+  g.innerHTML=DOWS.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  const evs=getMonthEvs(curYear,curMonth);
+  const first=new Date(curYear,curMonth,1).getDay();
+  const dim=new Date(curYear,curMonth+1,0).getDate();
+  const prevD=new Date(curYear,curMonth,0).getDate();
+  const today=new Date();
+  for(let i=0;i<first;i++)g.innerHTML+=`<div class="cal-day other"><div class="cal-dn">${prevD-first+1+i}</div></div>`;
+  for(let d=1;d<=dim;d++){
+    const isT=today.getDate()===d&&today.getMonth()===curMonth&&today.getFullYear()===curYear;
+    const ev=evs[d]||[];
+    const pills=ev.slice(0,2).map(e=>`<div class="pill ${e.type}">${e.name.split(' ')[0]}</div>`).join('');
+    const more=ev.length>2?`<div style="font-size:10px;color:var(--muted);padding:1px 4px">+${ev.length-2}</div>`:'';
+    g.innerHTML+=`<div class="cal-day${isT?' today':''}${ev.length?' clickable':''}"${ev.length?` onclick="openDayModal(${d})"`:''}><div class="cal-dn">${d}</div><div class="cal-evs">${pills}${more}</div></div>`;
+  }
+  const total=first+dim,rem=total%7===0?0:7-(total%7);
+  for(let i=1;i<=rem;i++)g.innerHTML+=`<div class="cal-day other"><div class="cal-dn">${i}</div></div>`;
+}
+function prevMonth(){if(curMonth===0){curMonth=11;curYear--;}else curMonth--;renderCalendar();}
+function nextMonth(){if(curMonth===11){curMonth=0;curYear++;}else curMonth++;renderCalendar();}
+function goToday(){curMonth=new Date().getMonth();curYear=new Date().getFullYear();renderCalendar();}
+
+// DAY MODAL
+function openDayModal(day){
+  const evs=getMonthEvs(curYear,curMonth); selDayEvs=evs[day]||[];
+  document.getElementById('day-title').textContent=MONTHS[curMonth]+' '+day;
+  document.getElementById('day-evs').innerHTML=selDayEvs.map(ev=>`
+    <div class="ev-card">
+      <div class="ev-ico ${ev.type}">${ev.type==='birthday'?'🎂':'🎉'}</div>
+      <div class="ev-info"><strong>${ev.name}</strong><p>${ev.sub}${activeStore==='all'?' &middot; <span class="stag">'+ev.store+'</span>':''}</p></div>
+    </div>`).join('');
+  document.getElementById('day-ai-panel').style.display='none';
+  document.getElementById('day-overlay').classList.add('open');
+}
+async function genDayMsg(){
+  const panel=document.getElementById('day-ai-panel'),out=document.getElementById('day-ai-out');
+  panel.style.display='';out.innerHTML='<div class="ai-loading">Generating...</div>';
+  const store=activeStore==='all'?'Dough Zone':'Dough Zone '+activeStore;
+  const items=selDayEvs.map(ev=>ev.type==='birthday'?`${ev.name}'s birthday`:`${ev.name}'s ${ev.sub}`).join(', ');
+  out.textContent=await claude(`You are a GM at ${store}, a dumpling restaurant. Write a warm, genuine team celebration message (2-3 sentences, no hashtags or excessive emoji) for: ${items}. Make it feel personal and fitting for a close-knit restaurant crew.`);
+}
+
+// UPCOMING
+function renderUpcoming(){
+  const all=[];
+  filtered().forEach(e=>{
+    if(e.birthday){const n=nextOcc(e.birthday);all.push({name:e.name,store:e.store,type:'birthday',sub:'Birthday',next:n,days:daysUntil(n)});}
+    if(e.hire){const n=nextAnn(e.hire);const yrs=n.getFullYear()-new Date(e.hire).getFullYear();all.push({name:e.name,store:e.store,type:'anniversary',sub:`${yrs}-Year Anniversary`,next:n,days:daysUntil(n)});}
+  });
+  all.sort((a,b)=>a.days-b.days);
+  const up=all.filter(e=>e.days<=30);
+  const div=document.getElementById('upcoming-content');
+  if(!up.length){div.innerHTML='<div class="empty">🎈<small>No celebrations in the next 30 days.</small></div>';return;}
+  const g={'Today':[],'This Week':[],'This Month':[]};
+  up.forEach(e=>{if(e.days===0)g['Today'].push(e);else if(e.days<=7)g['This Week'].push(e);else g['This Month'].push(e);});
+  div.innerHTML=Object.entries(g).filter(([,v])=>v.length).map(([lbl,items])=>`
+    <div><div class="sec-lbl">${lbl}</div><div class="card-list">${items.map(e=>`
+      <div class="ev-card">
+        <div class="ev-ico ${e.type}">${e.type==='birthday'?'🎂':'🎉'}</div>
+        <div class="ev-info"><strong>${e.name}</strong><p>${e.sub}${activeStore==='all'?' &middot; <span class="stag">'+e.store+'</span>':''}</p></div>
+        <div class="ev-r">
+          <div class="ev-days">${e.days===0?'<b>Today!</b>':`<b>${e.days}</b> days`}</div>
+          <button class="ai-btn" onclick="genUpMsg('${e.name.replace(/'/g,"\\'")}','${e.type}','${e.sub.replace(/'/g,"\\'")}','${e.store.replace(/'/g,"\\'")}')">&#10022; Message</button>
+        </div>
+      </div>`).join('')}</div></div>`).join('');
+  document.getElementById('ai-up-panel').style.display='none';
+}
+async function genUpMsg(name,type,sub,store){
+  const panel=document.getElementById('ai-up-panel'),out=document.getElementById('ai-up-out');
+  panel.style.display='';out.innerHTML='<div class="ai-loading">Drafting...</div>';
+  out.textContent=await claude(`You are a GM at Dough Zone ${store}, a dumpling restaurant chain. Write a warm, genuine team message (2-3 sentences, no hashtags) for ${name}'s ${type==='birthday'?'birthday':sub}. Personal and restaurant-specific, not corporate.`);
+}
+
+// ROSTER
+function renderRoster(){
+  const q=(document.getElementById('roster-search').value||'').toLowerCase();
+  const emps=filtered().filter(e=>!q||e.name.toLowerCase().includes(q));
+  const rows=[];
+  emps.forEach(e=>{
+    if(e.birthday){const n=nextOcc(e.birthday);rows.push({e,type:'birthday',date:e.birthday,next:n,days:daysUntil(n)});}
+    if(e.hire){const n=nextAnn(e.hire);rows.push({e,type:'anniversary',date:e.hire,next:n,days:daysUntil(n)});}
+  });
+  rows.sort((a,b)=>a.days-b.days);
+  const body=document.getElementById('roster-body');
+  if(!rows.length){body.innerHTML=`<tr><td colspan="6" class="empty" style="padding:28px">No employees found.</td></tr>`;return;}
+  body.innerHTML=rows.map(r=>`
+    <tr>
+      <td><strong>${r.e.name}</strong>${r.e.role?`<br><span style="font-size:11px;color:var(--muted)">${r.e.role}</span>`:''}</td>
+      <td><span class="stag">${r.e.store||'—'}</span></td>
+      <td><span class="tag ${r.type}">${r.type==='birthday'?'Birthday':'Anniversary'}</span></td>
+      <td style="font-family:var(--mono);font-size:12px">${r.date}</td>
+      <td style="font-size:12px">${fmtDate(r.next)} <span style="color:var(--muted)">(${r.days===0?'today':`${r.days}d`})</span></td>
+      <td><button class="btn btn-sm btn-danger" onclick="deleteEmp(${r.e.id})">&#10005;</button></td>
+    </tr>`).join('');
+}
+async function genBulkMsg(){
+  const panel=document.getElementById('ai-roster-panel'),out=document.getElementById('ai-roster-out');
+  panel.style.display='';out.innerHTML='<div class="ai-loading">Generating...</div>';
+  const up=filtered().map(e=>{
+    const p=[];
+    if(e.birthday){const d=daysUntil(nextOcc(e.birthday));if(d<=30)p.push(`birthday in ${d} days`);}
+    if(e.hire){const d=daysUntil(nextAnn(e.hire));if(d<=30)p.push(`work anniversary in ${d} days`);}
+    return p.length?`${e.name} (${p.join(', ')})`:null;
+  }).filter(Boolean);
+  if(!up.length){out.textContent='No upcoming celebrations in the next 30 days.';return;}
+  const store=activeStore==='all'?'Dough Zone':'Dough Zone '+activeStore;
+  out.textContent=await claude(`You are a GM at ${store}, a dumpling restaurant chain in Seattle. Write a warm, brief group-chat message (3-4 sentences) acknowledging these upcoming celebrations: ${up.join('; ')}. Genuine and motivating.`);
+}
+
+// CRUD
+function openAdd(){
+  ['f-name','f-role','f-birthday'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-hire').value='';
+  const sel=document.getElementById('f-store');
+  sel.innerHTML='<option value="">— Select —</option>'+stores.map(s=>`<option value="${s}"${s===activeStore&&activeStore!=='all'?' selected':''}>${s}</option>`).join('');
+  document.getElementById('add-overlay').classList.add('open');
+}
+function saveEmployee(){
+  const name=document.getElementById('f-name').value.trim();
+  const store=document.getElementById('f-store').value;
+  if(!name){alert('Name is required');return;}
+  if(!store){alert('Please select a store');return;}
+  employees.push({id:Date.now(),name,store,role:document.getElementById('f-role').value.trim(),birthday:document.getElementById('f-birthday').value.trim(),hire:document.getElementById('f-hire').value});
+  saveEmp();closeModal('add-overlay');renderChips();renderCalendar();
+}
+function deleteEmp(id){
+  if(!confirm('Remove this employee?'))return;
+  employees=employees.filter(e=>e.id!==id);saveEmp();renderRoster();
+}
+
+// STORES MGMT
+function openStoresMgmt(){renderSMgmt();document.getElementById('new-store-inp').value='';document.getElementById('stores-overlay').classList.add('open');}
+function renderSMgmt(){
+  const el=document.getElementById('smgmt-list');
+  if(!stores.length){el.innerHTML='<p style="color:var(--muted);font-size:13px;margin-bottom:12px">No stores yet.</p>';return;}
+  el.innerHTML=stores.map(s=>{
+    const cnt=employees.filter(e=>e.store===s).length;
+    return`<div class="smgmt-item"><span>${s}</span><span class="smgmt-cnt">${cnt} emp</span><button class="btn btn-sm btn-danger" onclick="removeStore('${s.replace(/'/g,"\\'")}')">&#10005;</button></div>`;
+  }).join('');
+}
+function addStore(){
+  const val=document.getElementById('new-store-inp').value.trim();
+  if(!val)return;
+  if(stores.includes(val)){alert('Store already exists');return;}
+  stores.push(val);saveStores();renderSMgmt();renderChips();
+  document.getElementById('new-store-inp').value='';
+}
+function removeStore(name){
+  const cnt=employees.filter(e=>e.store===name).length;
+  if(cnt&&!confirm(`${name} has ${cnt} employee(s). Remove store anyway?`))return;
+  stores=stores.filter(s=>s!==name);saveStores();
+  if(activeStore===name)activeStore='all';
+  renderSMgmt();renderChips();renderCalendar();
+}
+
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function copyEl(id){
+  const t=document.getElementById(id).textContent;
+  navigator.clipboard.writeText(t).then(()=>{const b=document.querySelector(`[onclick="copyEl('${id}')"]`);b.textContent='Copied!';setTimeout(()=>b.textContent='Copy',1500);});
+}
+
+async function claude(prompt){
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const d=await r.json();return d.content?.[0]?.text||'Unable to generate.';
+  }catch(e){return'Error reaching AI. Please try again.';}
+}
+
+renderChips();renderCalendar();
+</script>
+</body>
+</html>
